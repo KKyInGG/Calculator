@@ -1,0 +1,25 @@
+.button{
+    margin-right: 1%;
+    width: 24%;
+
+}
+
+.buttonGroup{
+    margin-top: 1%;
+    width: 100%;
+    
+}
+
+.buttonBody{
+    width: 70%;
+    margin-left: 15%;
+    margin-top: 10%;
+    height: 70%;
+}
+
+.displayBox{
+    width: 99%;
+    pointer-events:none;
+    text-align: right;
+    direction: rtl;
+}
