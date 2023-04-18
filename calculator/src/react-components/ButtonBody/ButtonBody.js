@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Button from 'react-bootstrap/Button';
 import ButtonGroup from 'react-bootstrap/ButtonGroup';
 import ButtonToolbar from 'react-bootstrap/ButtonToolbar';
+import HistoryPanel from '../HistoryPanel/HistoryPanel';
 import './ButtonBody.css'
 
 
@@ -9,7 +10,7 @@ class ButtonBody extends React.Component{
 
     constructor(props) {
         super(props);
-        this.state = {hasMemoryValue: false, displayValue: "0", memoryValue: "", hasSqrt: false};
+        this.state = {hasMemoryValue: false, displayValue: "0", memoryValue: "", hasSqrt: false, history:[], data: null, showHistoryPanel: false};
         this.handleClick = this.handleClick.bind(this);
         this.handleChange = this.handleChange.bind(this);
         
@@ -25,6 +26,34 @@ class ButtonBody extends React.Component{
         catch(error){
             return "Error";
         }
+    }
+
+    updateHistory = () =>{
+        const url = "http://localhost:3001/updateData";
+        const request = new Request(url, {
+            method: "put",
+            body: JSON.stringify({username: this.state.data.username, history: this.state.history}),
+            headers:{
+                "Content-Type": "application/json"
+            }
+        })
+        fetch(request).then((res) => {
+            if(res.status == 201){
+                console.log("update history successfully!")
+            }
+            else{
+                console.log("fail to update history")
+            }
+        }).catch((error) => {
+            console.log(error);
+        })
+        this.setState({history:[]});
+    }
+
+    storeHistory = (data) => {
+        console.log("setupHistory", data);
+        this.setState({history: data.history});
+        this.setState({data: data});
     }
 
     handleClick(event){
@@ -76,7 +105,10 @@ class ButtonBody extends React.Component{
             }
         }
         else if(curChar == "="){
+            var equation = curDisplayText + "=";
             curDisplayText = this.getResult(curDisplayText);
+            equation += curDisplayText;
+            this.state.history.push(equation);
         }
         else if(curChar == "Sqrt"){
             curDisplayText += "Sqrt("
@@ -99,6 +131,15 @@ class ButtonBody extends React.Component{
         console.log(event);
     }
 
+    displayHistory = () => {
+        this.setState({showHistoryPanel: true});
+    }
+
+    hideHistory = () => {
+        this.setState({showHistoryPanel: false});
+    }
+
+
     render(){
         const elements = 
         [["AC", "(",")","CE"],
@@ -116,7 +157,8 @@ class ButtonBody extends React.Component{
                     {
                         elements.map(element => {
                             const buttons = element.map(value => {
-                                return (<Button className="button" id={value} disabled={value == "MR" ? !this.state.hasMemoryValue : false}value={value} onClick={this.handleClick} variant={value == "MR" && this.state.hasMemoryValue ? "secondary" : "light"}>{value}</Button>)
+                                return (<Button className="button" id={value} disabled={value == "MR" ? !this.state.hasMemoryValue : false} 
+                                value={value} onClick={value == "HIS" ? this.displayHistory: this.handleClick} variant={value == "MR" && this.state.hasMemoryValue ? "secondary" : "light"}>{value}</Button>)
                             })
                             return (
                                 <ButtonToolbar className="buttonGroup">
@@ -125,6 +167,7 @@ class ButtonBody extends React.Component{
                             )
                         })
                     }
+                    <HistoryPanel show={this.state.showHistoryPanel} onHide={this.hideHistory} data={this.state.history}></HistoryPanel>
                 </div>
         )
     }
